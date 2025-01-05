@@ -1,7 +1,20 @@
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "./ui/button";
+import { Dispatch, SetStateAction } from "react";
 
-const SearchFilters = () => {
+interface SearchFiltersProps {
+  searchTerm: string;
+  setSearchTerm: Dispatch<SetStateAction<string>>;
+  selectedCuisine: string;
+  setSelectedCuisine: Dispatch<SetStateAction<string>>;
+}
+
+const SearchFilters = ({
+  searchTerm,
+  setSearchTerm,
+  selectedCuisine,
+  setSelectedCuisine
+}: SearchFiltersProps) => {
   const cuisineTypes = ["Tout", "Congolais", "Africain", "Fast Food", "Poulet", "Poisson"];
   
   return (
@@ -13,6 +26,8 @@ const SearchFilters = () => {
             type="text"
             placeholder="Rechercher un restaurant ou un plat..."
             className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-buntu-primary"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Button variant="outline" className="flex items-center gap-2">
@@ -25,7 +40,12 @@ const SearchFilters = () => {
         {cuisineTypes.map((type) => (
           <button
             key={type}
-            className="px-4 py-1 rounded-full border hover:bg-buntu-primary hover:text-white transition-colors whitespace-nowrap"
+            className={`px-4 py-1 rounded-full border transition-colors whitespace-nowrap ${
+              selectedCuisine === type.toLowerCase() 
+                ? "bg-buntu-primary text-white" 
+                : "hover:bg-buntu-primary hover:text-white"
+            }`}
+            onClick={() => setSelectedCuisine(type.toLowerCase())}
           >
             {type}
           </button>
