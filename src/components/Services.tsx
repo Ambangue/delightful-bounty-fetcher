@@ -1,11 +1,11 @@
-import { Restaurant, Truck, ChefHat, Users, Calendar, ShoppingBag } from "lucide-react";
+import { UtensilsCrossed, Truck, ChefHat, Users, Calendar, ShoppingBag } from "lucide-react";
 
 const Services = () => {
   const services = [
     {
       title: "Restaurant",
       description: "Dégustez nos spécialités dans un cadre chaleureux et authentique.",
-      icon: Restaurant,
+      icon: UtensilsCrossed,
       image: "/restaurant.jpg"
     },
     {
