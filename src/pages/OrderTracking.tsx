@@ -4,6 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { toast } from 'sonner';
+import type { Database } from '@/integrations/supabase/types';
+
+type Order = Database['public']['Tables']['orders']['Row'] & {
+  order_items: Database['public']['Tables']['order_items']['Row'][];
+};
+
+type TrackingData = Database['public']['Tables']['delivery_tracking']['Row'];
 
 mapboxgl.accessToken = 'pk.eyJ1IjoiYW1iYW5ndWUtZ2VuIiwiYSI6ImNtNW1xMXZ1MDAyemoyanNndW54cWlzMGIifQ.LQWgidrul6GN54MJhmaOpg';
 
@@ -12,8 +19,8 @@ const OrderTracking = () => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const marker = useRef<mapboxgl.Marker | null>(null);
-  const [order, setOrder] = useState<any>(null);
-  const [tracking, setTracking] = useState<any>(null);
+  const [order, setOrder] = useState<Order | null>(null);
+  const [tracking, setTracking] = useState<TrackingData | null>(null);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -31,7 +38,7 @@ const OrderTracking = () => {
         return;
       }
 
-      setOrder(data);
+      setOrder(data as Order);
     };
 
     fetchOrder();
@@ -68,15 +75,18 @@ const OrderTracking = () => {
           filter: `order_id=eq.${id}`
         },
         (payload) => {
-          setTracking(payload.new);
-          if (payload.new.latitude && payload.new.longitude) {
-            marker.current?.setLngLat([payload.new.longitude, payload.new.latitude]);
-            map.current?.flyTo({
-              center: [payload.new.longitude, payload.new.latitude],
+          const newTracking = payload.new as TrackingData;
+          setTracking(newTracking);
+          
+          if (newTracking.latitude && newTracking.longitude && marker.current && map.current) {
+            marker.current.setLngLat([newTracking.longitude, newTracking.latitude]);
+            map.current.flyTo({
+              center: [newTracking.longitude, newTracking.latitude],
               zoom: 15
             });
           }
-          toast.success(`Statut de la commande: ${payload.new.status}`);
+          
+          toast.success(`Statut de la commande: ${newTracking.status}`);
         }
       )
       .subscribe();
@@ -97,7 +107,7 @@ const OrderTracking = () => {
           <div className="bg-white rounded-lg shadow p-6 mb-6">
             <h2 className="text-xl font-semibold mb-4">Détails de la commande</h2>
             <div className="space-y-4">
-              {order.order_items.map((item: any) => (
+              {order.order_items.map((item) => (
                 <div key={item.id} className="flex justify-between">
                   <span>{item.item_name} x{item.quantity}</span>
                   <span>{item.price * item.quantity} FCFA</span>
