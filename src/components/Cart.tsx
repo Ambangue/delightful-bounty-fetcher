@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ShoppingCart, X } from "lucide-react";
 import { Button } from "./ui/button";
 import {
@@ -8,29 +7,84 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  quantity: number;
-  restaurantId: string;
-}
+import { useCart } from "@/contexts/CartContext";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const Cart = () => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const { state, removeFromCart, updateQuantity, clearCart } = useCart();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-  const removeItem = (id: string) => {
-    setItems(items.filter(item => item.id !== id));
-  };
+  const handleCheckout = async () => {
+    try {
+      setIsLoading(true);
+      
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        toast.error("Veuillez vous connecter pour commander");
+        return;
+      }
 
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    setItems(items.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    ));
+      // Create order in database
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          restaurant_id: state.restaurantId,
+          total_amount: total,
+          delivery_address: "À implémenter", // TODO: Add address input
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (orderError || !order) {
+        throw new Error(orderError?.message || "Erreur lors de la création de la commande");
+      }
+
+      // Create order items
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .insert(
+          state.items.map(item => ({
+            order_id: order.id,
+            item_name: item.name,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        );
+
+      if (itemsError) {
+        throw new Error(itemsError.message);
+      }
+
+      // Initialize delivery tracking
+      const { error: trackingError } = await supabase
+        .from('delivery_tracking')
+        .insert({
+          order_id: order.id,
+          status: 'preparing',
+        });
+
+      if (trackingError) {
+        throw new Error(trackingError.message);
+      }
+
+      clearCart();
+      toast.success("Commande créée avec succès!");
+      navigate(`/order/${order.id}`);
+    } catch (error) {
+      toast.error("Erreur lors de la création de la commande");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -42,9 +96,9 @@ const Cart = () => {
           className="fixed bottom-4 right-4 h-16 w-16 rounded-full shadow-lg bg-buntu-primary hover:bg-buntu-secondary text-white"
         >
           <ShoppingCart className="h-6 w-6" />
-          {items.length > 0 && (
+          {state.items.length > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full h-6 w-6 flex items-center justify-center text-sm">
-              {items.length}
+              {state.items.length}
             </span>
           )}
         </Button>
@@ -54,11 +108,11 @@ const Cart = () => {
           <SheetTitle>Votre panier</SheetTitle>
         </SheetHeader>
         <div className="mt-8">
-          {items.length === 0 ? (
+          {state.items.length === 0 ? (
             <p className="text-center text-gray-500">Votre panier est vide</p>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
+              {state.items.map((item) => (
                 <div key={item.id} className="flex items-center justify-between border-b pb-4">
                   <div>
                     <h3 className="font-medium">{item.name}</h3>
@@ -69,6 +123,7 @@ const Cart = () => {
                       variant="outline"
                       size="icon"
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                      disabled={item.quantity <= 1}
                     >
                       -
                     </Button>
@@ -83,7 +138,7 @@ const Cart = () => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => removeItem(item.id)}
+                      onClick={() => removeFromCart(item.id)}
                     >
                       <X className="h-4 w-4" />
                     </Button>
@@ -95,8 +150,12 @@ const Cart = () => {
                   <span>Total</span>
                   <span>{total} FCFA</span>
                 </div>
-                <Button className="w-full mt-4 bg-buntu-primary hover:bg-buntu-secondary">
-                  Commander
+                <Button 
+                  className="w-full mt-4 bg-buntu-primary hover:bg-buntu-secondary"
+                  onClick={handleCheckout}
+                  disabled={isLoading}
+                >
+                  {isLoading ? "Traitement..." : "Commander"}
                 </Button>
               </div>
             </div>

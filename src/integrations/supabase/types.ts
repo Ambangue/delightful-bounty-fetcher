@@ -9,7 +9,106 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      delivery_tracking: {
+        Row: {
+          id: string
+          latitude: number | null
+          longitude: number | null
+          order_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          order_id?: string | null
+          status: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          order_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "delivery_tracking_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      order_items: {
+        Row: {
+          id: string
+          item_name: string
+          order_id: string | null
+          price: number
+          quantity: number
+        }
+        Insert: {
+          id?: string
+          item_name: string
+          order_id?: string | null
+          price: number
+          quantity: number
+        }
+        Update: {
+          id?: string
+          item_name?: string
+          order_id?: string | null
+          price?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          delivery_address: string
+          id: string
+          restaurant_id: string
+          status: string
+          total_amount: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          delivery_address: string
+          id?: string
+          restaurant_id: string
+          status?: string
+          total_amount: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          delivery_address?: string
+          id?: string
+          restaurant_id?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
