@@ -8,6 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
+import Navbar from "@/components/Navbar";
 
 interface MenuItem {
   id: string;
@@ -20,6 +23,7 @@ interface MenuItem {
 
 const RestaurantDetail = () => {
   const { id } = useParams();
+  const { addToCart } = useCart();
   
   // Exemple de données (à remplacer par des données réelles)
   const restaurant = {
@@ -47,13 +51,47 @@ const RestaurantDetail = () => {
         price: 4000,
         image: "/saka-saka.jpg",
         category: "Plats principaux"
+      },
+      {
+        id: "3",
+        name: "Salade d'avocat",
+        description: "Salade fraîche d'avocat avec tomates et oignons",
+        price: 2000,
+        image: "/salade.jpg",
+        category: "Entrées"
+      },
+      {
+        id: "4",
+        name: "Jus de Gingembre",
+        description: "Jus de gingembre fait maison",
+        price: 1500,
+        image: "/gingembre.jpg",
+        category: "Boissons"
+      },
+      {
+        id: "5",
+        name: "Beignets aux bananes",
+        description: "Beignets de bananes plantains sucrés",
+        price: 2000,
+        image: "/beignets.jpg",
+        category: "Desserts"
       }
     ] as MenuItem[]
   };
 
+  const handleAddToCart = (item: MenuItem) => {
+    addToCart({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      restaurantId: restaurant.id
+    });
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="container mx-auto px-4">
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <div className="container mx-auto px-4 pt-20">
         {/* En-tête du restaurant */}
         <div className="relative h-64 rounded-lg overflow-hidden mb-6">
           <img
@@ -118,7 +156,10 @@ const RestaurantDetail = () => {
                               <span className="font-bold">
                                 {item.price} FCFA
                               </span>
-                              <Button className="bg-buntu-primary hover:bg-buntu-secondary">
+                              <Button 
+                                className="bg-buntu-primary hover:bg-buntu-secondary"
+                                onClick={() => handleAddToCart(item)}
+                              >
                                 Ajouter au panier
                               </Button>
                             </div>

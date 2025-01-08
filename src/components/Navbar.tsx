@@ -1,9 +1,29 @@
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
+
+  // Vérifier l'état de l'authentification
+  supabase.auth.onAuthStateChange((event, session) => {
+    setUser(session?.user || null);
+  });
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Déconnexion réussie");
+      navigate("/");
+    } catch (error) {
+      toast.error("Erreur lors de la déconnexion");
+    }
+  };
 
   return (
     <nav className="bg-white/95 backdrop-blur-sm fixed w-full z-50 shadow-sm">
@@ -14,11 +34,33 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             <NavLink to="/">Accueil</NavLink>
             <NavLink to="/restaurants">Restaurants</NavLink>
-            <NavLink to="#a-propos">À propos</NavLink>
-            <NavLink to="#contact">Contact</NavLink>
+            {user ? (
+              <>
+                <NavLink to="/orders">Mes commandes</NavLink>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-2"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="w-4 h-4" />
+                  Déconnexion
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/auth">
+                  <Button variant="outline">Connexion</Button>
+                </Link>
+                <Link to="/auth?signup=true">
+                  <Button className="bg-buntu-primary hover:bg-buntu-secondary text-white">
+                    Inscription
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -36,8 +78,33 @@ const Navbar = () => {
             <div className="flex flex-col space-y-4">
               <MobileNavLink to="/" onClick={() => setIsOpen(false)}>Accueil</MobileNavLink>
               <MobileNavLink to="/restaurants" onClick={() => setIsOpen(false)}>Restaurants</MobileNavLink>
-              <MobileNavLink to="#a-propos" onClick={() => setIsOpen(false)}>À propos</MobileNavLink>
-              <MobileNavLink to="#contact" onClick={() => setIsOpen(false)}>Contact</MobileNavLink>
+              {user ? (
+                <>
+                  <MobileNavLink to="/orders" onClick={() => setIsOpen(false)}>Mes commandes</MobileNavLink>
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-2 w-full justify-start px-4"
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Déconnexion
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth" className="px-4" onClick={() => setIsOpen(false)}>
+                    <Button variant="outline" className="w-full">Connexion</Button>
+                  </Link>
+                  <Link to="/auth?signup=true" className="px-4" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full bg-buntu-primary hover:bg-buntu-secondary text-white">
+                      Inscription
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         )}
