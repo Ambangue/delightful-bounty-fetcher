@@ -74,12 +74,12 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
 };
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
+  <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
       <CartProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <Cart />
           <Routes>
             <Route path="/" element={<Index />} />
@@ -132,10 +132,10 @@ const App = () => (
               }
             />
           </Routes>
-        </BrowserRouter>
+        </TooltipProvider>
       </CartProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </BrowserRouter>
 );
 
 export default App;
