@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Database } from "@/integrations/supabase/types";
+import { AuthChangeEvent } from "@supabase/supabase-js";
 
 type UserRole = Database["public"]["Enums"]["user_role"];
 
@@ -26,7 +27,7 @@ const Auth = () => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         handleRedirection(session.user.id);
       } else if (event === 'SIGNED_UP' && session?.user) {
