@@ -90,7 +90,7 @@ const Auth = () => {
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
         <div className="max-w-md mx-auto">
-          <Card className-4">
+          <Card className="p-6 mb-4">
             <div className="flex items-center justify-center mb-4">
               <button 
                 className={`px-4 py-2 ${!isSignUp ? 'bg-primary text-white' : 'bg-gray-100'} rounded-l-lg`}
