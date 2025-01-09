@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useCart } from "@/contexts/CartContext";
-import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 
 interface MenuItem {
@@ -25,7 +24,6 @@ const RestaurantDetail = () => {
   const { id } = useParams();
   const { addToCart } = useCart();
   
-  // Exemple de données (à remplacer par des données réelles)
   const restaurant = {
     id,
     name: "Mami Wata",
@@ -36,24 +34,9 @@ const RestaurantDetail = () => {
     image: "/restaurant.jpg",
     categories: ["Entrées", "Plats principaux", "Desserts", "Boissons"],
     menu: [
+      // Entrées
       {
         id: "1",
-        name: "Poulet Moambé",
-        description: "Poulet mijoté dans une sauce à base de noix de palme",
-        price: 5000,
-        image: "/moambe.jpg",
-        category: "Plats principaux"
-      },
-      {
-        id: "2",
-        name: "Saka Saka",
-        description: "Feuilles de manioc pilées avec poisson fumé",
-        price: 4000,
-        image: "/saka-saka.jpg",
-        category: "Plats principaux"
-      },
-      {
-        id: "3",
         name: "Salade d'avocat",
         description: "Salade fraîche d'avocat avec tomates et oignons",
         price: 2000,
@@ -61,13 +44,31 @@ const RestaurantDetail = () => {
         category: "Entrées"
       },
       {
-        id: "4",
-        name: "Jus de Gingembre",
-        description: "Jus de gingembre fait maison",
-        price: 1500,
-        image: "/gingembre.jpg",
-        category: "Boissons"
+        id: "2",
+        name: "Accras de morue",
+        description: "Beignets de morue épicés",
+        price: 2500,
+        image: "/accras.jpg",
+        category: "Entrées"
       },
+      // Plats principaux
+      {
+        id: "3",
+        name: "Poulet Moambé",
+        description: "Poulet mijoté dans une sauce à base de noix de palme",
+        price: 5000,
+        image: "/moambe.jpg",
+        category: "Plats principaux"
+      },
+      {
+        id: "4",
+        name: "Saka Saka",
+        description: "Feuilles de manioc pilées avec poisson fumé",
+        price: 4000,
+        image: "/saka-saka.jpg",
+        category: "Plats principaux"
+      },
+      // Desserts
       {
         id: "5",
         name: "Beignets aux bananes",
@@ -75,6 +76,31 @@ const RestaurantDetail = () => {
         price: 2000,
         image: "/beignets.jpg",
         category: "Desserts"
+      },
+      {
+        id: "6",
+        name: "Gâteau à la noix de coco",
+        description: "Gâteau moelleux à la noix de coco",
+        price: 2500,
+        image: "/gateau.jpg",
+        category: "Desserts"
+      },
+      // Boissons
+      {
+        id: "7",
+        name: "Jus de Gingembre",
+        description: "Jus de gingembre fait maison",
+        price: 1500,
+        image: "/gingembre.jpg",
+        category: "Boissons"
+      },
+      {
+        id: "8",
+        name: "Bissap",
+        description: "Jus d'hibiscus naturel",
+        price: 1500,
+        image: "/bissap.jpg",
+        category: "Boissons"
       }
     ] as MenuItem[]
   };

@@ -30,7 +30,6 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user || null);
-      // Fetch user role from profiles table
       if (session?.user) {
         fetchUserRole(session.user.id);
       }
