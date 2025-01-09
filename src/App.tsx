@@ -74,7 +74,7 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
   return children;
 };
 
-const AppContent = () => {
+const Root = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
@@ -141,11 +141,9 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <React.StrictMode>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </React.StrictMode>
+    <BrowserRouter>
+      <Root />
+    </BrowserRouter>
   );
 };
 
