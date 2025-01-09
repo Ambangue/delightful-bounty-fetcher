@@ -3,11 +3,16 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const [selectedRole, setSelectedRole] = useState<string>("user");
+  const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
     // Check if user is already authenticated
@@ -18,14 +23,28 @@ const Auth = () => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_UP' && session?.user) {
+        // Create user role after signup
+        const { error: roleError } = await supabase
+          .from('user_roles')
+          .insert([
+            { user_id: session.user.id, role: selectedRole }
+          ]);
+
+        if (roleError) {
+          toast.error("Erreur lors de la création du rôle");
+          return;
+        }
+
+        handleRedirection(session.user.id);
+      } else if (event === 'SIGNED_IN' && session?.user) {
         handleRedirection(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, selectedRole]);
 
   const handleRedirection = async (userId: string) => {
     try {
@@ -66,37 +85,78 @@ const Auth = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-24">
-        <div className="max-w-md mx-auto bg-white p-8 rounded-lg shadow-md">
-          <SupabaseAuth
-            supabaseClient={supabase}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: "#C17817",
-                    brandAccent: "#8B4513",
+        <div className="max-w-md mx-auto">
+          <Card className="p-6 mb-4">
+            <div className="flex items-center justify-center mb-4">
+              <button 
+                className={`px-4 py-2 ${!isSignUp ? 'bg-primary text-white' : 'bg-gray-100'} rounded-l-lg`}
+                onClick={() => setIsSignUp(false)}
+              >
+                Connexion
+              </button>
+              <button 
+                className={`px-4 py-2 ${isSignUp ? 'bg-primary text-white' : 'bg-gray-100'} rounded-r-lg`}
+                onClick={() => setIsSignUp(true)}
+              >
+                Inscription
+              </button>
+            </div>
+
+            {isSignUp && (
+              <div className="mb-6">
+                <Label className="text-base font-semibold mb-4 block">Choisissez votre rôle :</Label>
+                <RadioGroup 
+                  defaultValue="user" 
+                  onValueChange={setSelectedRole}
+                  className="flex flex-col space-y-2"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="user" id="user" />
+                    <Label htmlFor="user">Utilisateur</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="restaurant" id="restaurant" />
+                    <Label htmlFor="restaurant">Restaurant</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="delivery" id="delivery" />
+                    <Label htmlFor="delivery">Livreur</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+            )}
+
+            <SupabaseAuth
+              supabaseClient={supabase}
+              appearance={{
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: "#C17817",
+                      brandAccent: "#8B4513",
+                    },
                   },
                 },
-              },
-            }}
-            localization={{
-              variables: {
-                sign_in: {
-                  email_label: "Adresse email",
-                  password_label: "Mot de passe",
-                  button_label: "Se connecter",
+              }}
+              localization={{
+                variables: {
+                  sign_in: {
+                    email_label: "Adresse email",
+                    password_label: "Mot de passe",
+                    button_label: "Se connecter",
+                  },
+                  sign_up: {
+                    email_label: "Adresse email",
+                    password_label: "Mot de passe",
+                    button_label: "S'inscrire",
+                  },
                 },
-                sign_up: {
-                  email_label: "Adresse email",
-                  password_label: "Mot de passe",
-                  button_label: "S'inscrire",
-                },
-              },
-            }}
-            providers={[]}
-            redirectTo={`${window.location.origin}/`}
-          />
+              }}
+              providers={[]}
+              redirectTo={`${window.location.origin}/`}
+            />
+          </Card>
         </div>
       </div>
     </div>
