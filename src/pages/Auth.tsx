@@ -28,9 +28,9 @@ const Auth = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
+      if (event === AuthChangeEvent.SIGNED_IN && session?.user) {
         handleRedirection(session.user.id);
-      } else if (event === 'SIGNED_UP' && session?.user) {
+      } else if (event === AuthChangeEvent.SIGNED_UP && session?.user) {
         // Create user role after signup
         const { error: roleError } = await supabase
           .from('user_roles')
