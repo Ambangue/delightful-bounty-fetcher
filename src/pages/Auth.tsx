@@ -8,10 +8,13 @@ import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
+import { Database } from "@/integrations/supabase/types";
+
+type UserRole = Database["public"]["Enums"]["user_role"];
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [selectedRole, setSelectedRole] = useState<string>("user");
+  const [selectedRole, setSelectedRole] = useState<UserRole>("user");
   const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
@@ -24,21 +27,22 @@ const Auth = () => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_UP' && session?.user) {
+      if (event === 'SIGNED_IN' && session?.user) {
+        handleRedirection(session.user.id);
+      } else if (event === 'SIGNED_UP' && session?.user) {
         // Create user role after signup
         const { error: roleError } = await supabase
           .from('user_roles')
-          .insert([
-            { user_id: session.user.id, role: selectedRole }
-          ]);
+          .insert({
+            user_id: session.user.id,
+            role: selectedRole
+          });
 
         if (roleError) {
           toast.error("Erreur lors de la création du rôle");
           return;
         }
 
-        handleRedirection(session.user.id);
-      } else if (event === 'SIGNED_IN' && session?.user) {
         handleRedirection(session.user.id);
       }
     });
@@ -107,7 +111,7 @@ const Auth = () => {
                 <Label className="text-base font-semibold mb-4 block">Choisissez votre rôle :</Label>
                 <RadioGroup 
                   defaultValue="user" 
-                  onValueChange={setSelectedRole}
+                  onValueChange={(value) => setSelectedRole(value as UserRole)}
                   className="flex flex-col space-y-2"
                 >
                   <div className="flex items-center space-x-2">
