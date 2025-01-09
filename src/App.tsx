@@ -12,6 +12,7 @@ import Auth from "./pages/Auth";
 import Cart from "./components/Cart";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
+import React from 'react';
 
 // Admin routes
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -73,8 +74,8 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
   return children;
 };
 
-const App = () => (
-  <BrowserRouter>
+const AppContent = () => {
+  return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <TooltipProvider>
@@ -135,7 +136,17 @@ const App = () => (
         </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>
-  </BrowserRouter>
-);
+  );
+};
+
+const App = () => {
+  return (
+    <React.StrictMode>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </React.StrictMode>
+  );
+};
 
 export default App;
