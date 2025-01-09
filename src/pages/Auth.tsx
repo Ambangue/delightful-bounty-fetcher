@@ -5,10 +5,10 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import { toast } from "sonner";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Database } from "@/integrations/supabase/types";
+import RoleSelector from "@/components/auth/RoleSelector";
+import { createUserRole, getUserRole, handleRoleBasedRedirection } from "@/utils/roleManagement";
 
 type UserRole = Database["public"]["Enums"]["user_role"];
 
@@ -18,72 +18,39 @@ const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
 
   useEffect(() => {
-    // Check if user is already authenticated
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
-        handleRedirection(session.user.id);
-      }
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        handleRedirection(session.user.id);
-      } else if (event === 'SIGNED_UP' && session?.user) {
-        // Create user role after signup
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert({
-            user_id: session.user.id,
-            role: selectedRole
-          });
-
-        if (roleError) {
-          toast.error("Erreur lors de la création du rôle");
-          return;
+        try {
+          const role = await getUserRole(session.user.id);
+          handleRoleBasedRedirection(role, navigate);
+        } catch (error) {
+          console.error('Error checking session:', error);
         }
+      }
+    };
 
-        handleRedirection(session.user.id);
+    checkSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session) => {
+      if (!session?.user) return;
+
+      try {
+        if (event === 'SIGNED_IN') {
+          const role = await getUserRole(session.user.id);
+          handleRoleBasedRedirection(role, navigate);
+        } else if (event === 'SIGNED_UP') {
+          await createUserRole(session.user.id, selectedRole);
+          handleRoleBasedRedirection(selectedRole, navigate);
+        }
+      } catch (error) {
+        console.error('Auth state change error:', error);
+        toast.error("Une erreur est survenue");
       }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate, selectedRole]);
-
-  const handleRedirection = async (userId: string) => {
-    try {
-      // Fetch user role
-      const { data: userRole, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error) {
-        toast.error("Erreur lors de la récupération du rôle");
-        return;
-      }
-
-      // Redirect based on role
-      switch (userRole?.role) {
-        case 'admin':
-          navigate('/admin');
-          break;
-        case 'restaurant':
-          navigate('/restaurant');
-          break;
-        case 'delivery':
-          navigate('/delivery');
-          break;
-        default:
-          navigate('/'); // Regular users go to home page
-          break;
-      }
-    } catch (error) {
-      console.error('Error during redirection:', error);
-      toast.error("Erreur lors de la redirection");
-    }
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,27 +74,7 @@ const Auth = () => {
             </div>
 
             {isSignUp && (
-              <div className="mb-6">
-                <Label className="text-base font-semibold mb-4 block">Choisissez votre rôle :</Label>
-                <RadioGroup 
-                  defaultValue="user" 
-                  onValueChange={(value) => setSelectedRole(value as UserRole)}
-                  className="flex flex-col space-y-2"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="user" id="user" />
-                    <Label htmlFor="user">Utilisateur</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="restaurant" id="restaurant" />
-                    <Label htmlFor="restaurant">Restaurant</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="delivery" id="delivery" />
-                    <Label htmlFor="delivery">Livreur</Label>
-                  </div>
-                </RadioGroup>
-              </div>
+              <RoleSelector onRoleChange={setSelectedRole} defaultRole={selectedRole} />
             )}
 
             <SupabaseAuth
