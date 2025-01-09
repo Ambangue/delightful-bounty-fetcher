@@ -3,9 +3,64 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 const Auth = () => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        handleRedirection(session.user.id);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session?.user) {
+        handleRedirection(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleRedirection = async (userId: string) => {
+    try {
+      // Fetch user role
+      const { data: userRole, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        toast.error("Erreur lors de la récupération du rôle");
+        return;
+      }
+
+      // Redirect based on role
+      switch (userRole?.role) {
+        case 'admin':
+          navigate('/admin');
+          break;
+        case 'restaurant':
+          navigate('/restaurant-dashboard');
+          break;
+        case 'delivery':
+          navigate('/delivery');
+          break;
+        default:
+          navigate('/'); // Regular users go to home page
+          break;
+      }
+    } catch (error) {
+      console.error('Error during redirection:', error);
+      toast.error("Erreur lors de la redirection");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -35,7 +90,7 @@ const Auth = () => {
                 sign_up: {
                   email_label: "Adresse email",
                   password_label: "Mot de passe",
-                  button_label: "S\"inscrire",
+                  button_label: "S'inscrire",
                 },
               },
             }}
