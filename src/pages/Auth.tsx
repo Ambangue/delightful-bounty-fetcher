@@ -1,9 +1,9 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
@@ -70,7 +70,7 @@ const Auth = () => {
           navigate('/admin');
           break;
         case 'restaurant':
-          navigate('/restaurant-dashboard');
+          navigate('/restaurant');
           break;
         case 'delivery':
           navigate('/delivery');
