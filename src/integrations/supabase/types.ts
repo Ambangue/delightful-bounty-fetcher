@@ -11,26 +11,35 @@ export type Database = {
     Tables: {
       delivery_tracking: {
         Row: {
+          delivered_at: string | null
+          delivery_user_id: string | null
           id: string
           latitude: number | null
           longitude: number | null
           order_id: string | null
+          picked_up_at: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          delivered_at?: string | null
+          delivery_user_id?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           order_id?: string | null
+          picked_up_at?: string | null
           status: string
           updated_at?: string
         }
         Update: {
+          delivered_at?: string | null
+          delivery_user_id?: string | null
           id?: string
           latitude?: number | null
           longitude?: number | null
           order_id?: string | null
+          picked_up_at?: string | null
           status?: string
           updated_at?: string
         }
@@ -78,9 +87,14 @@ export type Database = {
       }
       orders: {
         Row: {
+          accepted_at: string | null
           created_at: string
           delivery_address: string
           id: string
+          payment_status: string
+          prepared_at: string | null
+          rating: number | null
+          rating_comment: string | null
           restaurant_id: string
           status: string
           total_amount: number
@@ -88,9 +102,14 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          accepted_at?: string | null
           created_at?: string
           delivery_address: string
           id?: string
+          payment_status?: string
+          prepared_at?: string | null
+          rating?: number | null
+          rating_comment?: string | null
           restaurant_id: string
           status?: string
           total_amount: number
@@ -98,9 +117,14 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          accepted_at?: string | null
           created_at?: string
           delivery_address?: string
           id?: string
+          payment_status?: string
+          prepared_at?: string | null
+          rating?: number | null
+          rating_comment?: string | null
           restaurant_id?: string
           status?: string
           total_amount?: number
