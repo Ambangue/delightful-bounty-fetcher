@@ -26,7 +26,7 @@ const Auth = () => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: string, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
         handleRedirection(session.user.id);
       } else if (event === 'SIGNED_UP' && session?.user) {
