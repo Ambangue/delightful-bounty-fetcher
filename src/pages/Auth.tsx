@@ -19,8 +19,8 @@ const Auth = () => {
               variables: {
                 default: {
                   colors: {
-                    brand: '#C17817',
-                    brandAccent: '#8B4513',
+                    brand: "#C17817",
+                    brandAccent: "#8B4513",
                   },
                 },
               },
@@ -28,14 +28,14 @@ const Auth = () => {
             localization={{
               variables: {
                 sign_in: {
-                  email_label: 'Adresse email',
-                  password_label: 'Mot de passe',
-                  button_label: 'Se connecter',
+                  email_label: "Adresse email",
+                  password_label: "Mot de passe",
+                  button_label: "Se connecter",
                 },
                 sign_up: {
-                  email_label: 'Adresse email',
-                  password_label: 'Mot de passe',
-                  button_label: 'S'inscrire',
+                  email_label: "Adresse email",
+                  password_label: "Mot de passe",
+                  button_label: "S\"inscrire",
                 },
               },
             }}
