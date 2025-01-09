@@ -13,6 +13,7 @@ import Cart from "./components/Cart";
 import { useEffect, useState } from "react";
 import { supabase } from "./integrations/supabase/client";
 import React from 'react';
+import { toast } from "sonner";
 
 // Admin routes
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -33,14 +34,17 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
       setUser(session?.user || null);
       if (session?.user) {
         fetchUserRole(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setUser(session?.user || null);
       if (session?.user) {
         fetchUserRole(session.user.id);
+      } else {
+        setLoading(false);
       }
     });
 
@@ -48,14 +52,26 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
   }, []);
 
   const fetchUserRole = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId)
+        .maybeSingle(); // Using maybeSingle instead of single
 
-    if (!error && data) {
-      setUserRole(data.role);
+      if (error) {
+        console.error('Error fetching user role:', error);
+        toast.error("Erreur lors de la récupération du rôle utilisateur");
+        setLoading(false);
+        return;
+      }
+
+      setUserRole(data?.role || 'user'); // Default to 'user' if no role is found
+      setLoading(false);
+    } catch (error) {
+      console.error('Error in fetchUserRole:', error);
+      toast.error("Erreur lors de la récupération du rôle utilisateur");
+      setLoading(false);
     }
   };
 
@@ -68,6 +84,7 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
   }
 
   if (allowedRoles.length > 0 && !allowedRoles.includes(userRole || '')) {
+    toast.error("Vous n'avez pas les permissions nécessaires pour accéder à cette page");
     return <Navigate to="/" replace />;
   }
 
