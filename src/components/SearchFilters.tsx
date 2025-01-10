@@ -2,18 +2,31 @@ import { Search, SlidersHorizontal } from "lucide-react";
 import { Button } from "./ui/button";
 import { Dispatch, SetStateAction } from "react";
 
+interface UserPreferences {
+  cuisine: string;
+  maxDeliveryTime: number;
+  minRating: number;
+  glutenFree: boolean;
+  vegetarian: boolean;
+  priceRange: string;
+}
+
 interface SearchFiltersProps {
   searchTerm: string;
   setSearchTerm: Dispatch<SetStateAction<string>>;
   selectedCuisine: string;
   setSelectedCuisine: Dispatch<SetStateAction<string>>;
+  userPreferences: UserPreferences;
+  setUserPreferences: Dispatch<SetStateAction<UserPreferences>>;
 }
 
 const SearchFilters = ({
   searchTerm,
   setSearchTerm,
   selectedCuisine,
-  setSelectedCuisine
+  setSelectedCuisine,
+  userPreferences,
+  setUserPreferences
 }: SearchFiltersProps) => {
   const cuisineTypes = ["Tout", "Congolais", "Africain", "Fast Food", "Poulet", "Poisson"];
   
@@ -45,7 +58,13 @@ const SearchFilters = ({
                 ? "bg-buntu-primary text-white" 
                 : "hover:bg-buntu-primary hover:text-white"
             }`}
-            onClick={() => setSelectedCuisine(type.toLowerCase())}
+            onClick={() => {
+              setSelectedCuisine(type.toLowerCase());
+              setUserPreferences({
+                ...userPreferences,
+                cuisine: type.toLowerCase()
+              });
+            }}
           >
             {type}
           </button>
