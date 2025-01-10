@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { CartProvider } from "./contexts/CartContext";
+import ErrorBoundary from "./components/ErrorBoundary";
+import NotFound from "./components/NotFound";
 import Index from "./pages/Index";
 import Restaurants from "./pages/Restaurants";
 import RestaurantDetail from "./pages/RestaurantDetail";
@@ -22,7 +24,15 @@ import RestaurantDashboard from "./pages/restaurant/Dashboard";
 // Delivery routes
 import DeliveryDashboard from "./pages/delivery/Dashboard";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNode, allowedRoles?: string[] }) => {
   const [user, setUser] = useState<any>(null);
@@ -57,7 +67,7 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .maybeSingle(); // Using maybeSingle instead of single
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user role:', error);
@@ -66,7 +76,7 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
         return;
       }
 
-      setUserRole(data?.role || 'user'); // Default to 'user' if no role is found
+      setUserRole(data?.role || 'user');
       setLoading(false);
     } catch (error) {
       console.error('Error in fetchUserRole:', error);
@@ -76,10 +86,13 @@ const PrivateRoute = ({ children, allowedRoles = [] }: { children: React.ReactNo
   };
 
   if (loading) {
-    return <div>Chargement...</div>;
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-buntu-primary"></div>
+    </div>;
   }
 
   if (!user) {
+    toast.error("Vous devez être connecté pour accéder à cette page");
     return <Navigate to="/auth" replace />;
   }
 
@@ -96,60 +109,65 @@ const Root = () => {
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Cart />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/restaurants" element={<Restaurants />} />
-            <Route 
-              path="/restaurant/:id" 
-              element={
-                <PrivateRoute>
-                  <RestaurantDetail />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/order/:id" 
-              element={
-                <PrivateRoute>
-                  <OrderTracking />
-                </PrivateRoute>
-              } 
-            />
+          <ErrorBoundary>
+            <Toaster />
+            <Sonner />
+            <Cart />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/restaurants" element={<Restaurants />} />
+              <Route 
+                path="/restaurant/:id" 
+                element={
+                  <PrivateRoute>
+                    <RestaurantDetail />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/order/:id" 
+                element={
+                  <PrivateRoute>
+                    <OrderTracking />
+                  </PrivateRoute>
+                } 
+              />
 
-            {/* Admin routes */}
-            <Route
-              path="/admin"
-              element={
-                <PrivateRoute allowedRoles={['admin']}>
-                  <AdminDashboard />
-                </PrivateRoute>
-              }
-            />
+              {/* Admin routes */}
+              <Route
+                path="/admin/*"
+                element={
+                  <PrivateRoute allowedRoles={['admin']}>
+                    <AdminDashboard />
+                  </PrivateRoute>
+                }
+              />
 
-            {/* Restaurant routes */}
-            <Route
-              path="/restaurant-dashboard"
-              element={
-                <PrivateRoute allowedRoles={['restaurant']}>
-                  <RestaurantDashboard />
-                </PrivateRoute>
-              }
-            />
+              {/* Restaurant routes */}
+              <Route
+                path="/restaurant-dashboard/*"
+                element={
+                  <PrivateRoute allowedRoles={['restaurant']}>
+                    <RestaurantDashboard />
+                  </PrivateRoute>
+                }
+              />
 
-            {/* Delivery routes */}
-            <Route
-              path="/delivery"
-              element={
-                <PrivateRoute allowedRoles={['delivery']}>
-                  <DeliveryDashboard />
-                </PrivateRoute>
-              }
-            />
-          </Routes>
+              {/* Delivery routes */}
+              <Route
+                path="/delivery/*"
+                element={
+                  <PrivateRoute allowedRoles={['delivery']}>
+                    <DeliveryDashboard />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* 404 route */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </ErrorBoundary>
         </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>
