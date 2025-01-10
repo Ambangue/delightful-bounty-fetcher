@@ -11,6 +11,7 @@ const Restaurants = () => {
     {
       id: "1",
       name: "Mami Wata",
+      description: "Les meilleurs plats traditionnels congolais en ville",
       image: "/restaurant.jpg",
       rating: 4.8,
       deliveryTime: "25-35 min",
@@ -21,6 +22,7 @@ const Restaurants = () => {
     {
       id: "2",
       name: "Le Massamba",
+      description: "Une expérience culinaire africaine authentique",
       image: "/restaurant.jpg",
       rating: 4.5,
       deliveryTime: "30-45 min",
@@ -31,6 +33,7 @@ const Restaurants = () => {
     {
       id: "3",
       name: "Chez Tantine",
+      description: "Le goût de la cuisine maison congolaise",
       image: "/restaurant.jpg",
       rating: 4.7,
       deliveryTime: "20-30 min",
@@ -64,14 +67,7 @@ const Restaurants = () => {
           {filteredRestaurants.map((restaurant) => (
             <RestaurantCard
               key={restaurant.id}
-              id={restaurant.id}
-              name={restaurant.name}
-              image={restaurant.image}
-              rating={restaurant.rating}
-              deliveryTime={restaurant.deliveryTime}
-              minOrder={restaurant.minOrder}
-              cuisine={restaurant.cuisine}
-              address={restaurant.address}
+              {...restaurant}
             />
           ))}
         </div>
