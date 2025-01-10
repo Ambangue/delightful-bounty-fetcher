@@ -6,43 +6,54 @@
 
 @layer base {
   :root {
-    --background: 48 33% 97%;
-    --foreground: 20 50% 10%;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
 
-    --primary: 35 80% 42%;
-    --primary-foreground: 0 0% 100%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --primary: 35 100% 54%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 220 100% 40%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --accent: 120 100% 40%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
-    --secondary: 20 75% 31%;
-    --secondary-foreground: 0 0% 100%;
-
-    --accent: 353 42% 31%;
-    --accent-foreground: 0 0% 100%;
-
-    --border: 30 30% 90%;
-    --input: 30 30% 90%;
-    --ring: 35 80% 42%;
-
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 35 100% 54%;
+ 
     --radius: 0.5rem;
-  }
-
-  body {
-    @apply bg-background text-foreground font-sans;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display;
   }
 }
 
 .hero-section {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/hero-bg.jpg');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1504893524553-b855bce32c67');
   @apply bg-cover bg-center;
 }
 
-.section-title {
-  @apply font-display text-4xl md:text-5xl font-bold text-buntu-primary mb-6;
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.section-subtitle {
-  @apply font-display text-2xl md:text-3xl font-semibold text-buntu-secondary mb-4;
+.animate-fade-in {
+  animation: fade-in 1s ease-out forwards;
 }
