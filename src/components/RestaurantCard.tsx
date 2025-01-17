@@ -58,7 +58,7 @@ const RestaurantCard = ({
         <CardFooter className="px-4 py-3 bg-brand-gray-50">
           <div className="flex items-center text-brand-orange-500">
             <Star className="w-4 h-4 fill-current" />
-            <span className="ml-1 font-medium">{rating.toFixed(1)}</span>
+            <span className="ml-1 font-medium">{rating ? rating.toFixed(1) : "N/A"}</span>
           </div>
         </CardFooter>
       </Card>
