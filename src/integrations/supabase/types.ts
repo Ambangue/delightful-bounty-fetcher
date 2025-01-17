@@ -733,10 +733,14 @@ export type Database = {
           actual_delivery_time: string | null
           created_at: string
           delivery_address: string
+          delivery_instructions: string | null
+          delivery_time_preference: string | null
           estimated_delivery_time: string | null
           estimated_preparation_time: number | null
           id: string
+          loyalty_points_earned: number | null
           payment_method: string | null
+          payment_reference: string | null
           payment_status: string
           prepared_at: string | null
           rating: number | null
@@ -744,6 +748,7 @@ export type Database = {
           restaurant_comment: string | null
           restaurant_id: string
           restaurant_rating: number | null
+          special_requests: Json | null
           status: string
           tip_amount: number | null
           total_amount: number
@@ -755,10 +760,14 @@ export type Database = {
           actual_delivery_time?: string | null
           created_at?: string
           delivery_address: string
+          delivery_instructions?: string | null
+          delivery_time_preference?: string | null
           estimated_delivery_time?: string | null
           estimated_preparation_time?: number | null
           id?: string
+          loyalty_points_earned?: number | null
           payment_method?: string | null
+          payment_reference?: string | null
           payment_status?: string
           prepared_at?: string | null
           rating?: number | null
@@ -766,6 +775,7 @@ export type Database = {
           restaurant_comment?: string | null
           restaurant_id: string
           restaurant_rating?: number | null
+          special_requests?: Json | null
           status?: string
           tip_amount?: number | null
           total_amount: number
@@ -777,10 +787,14 @@ export type Database = {
           actual_delivery_time?: string | null
           created_at?: string
           delivery_address?: string
+          delivery_instructions?: string | null
+          delivery_time_preference?: string | null
           estimated_delivery_time?: string | null
           estimated_preparation_time?: number | null
           id?: string
+          loyalty_points_earned?: number | null
           payment_method?: string | null
+          payment_reference?: string | null
           payment_status?: string
           prepared_at?: string | null
           rating?: number | null
@@ -788,6 +802,7 @@ export type Database = {
           restaurant_comment?: string | null
           restaurant_id?: string
           restaurant_rating?: number | null
+          special_requests?: Json | null
           status?: string
           tip_amount?: number | null
           total_amount?: number
