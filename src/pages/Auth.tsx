@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { Database } from "@/integrations/supabase/types";
 import RoleSelector from "@/components/auth/RoleSelector";
 import { createUserRole, getUserRole, handleRoleBasedRedirection } from "@/utils/roleManagement";
+import { AuthError } from "@supabase/supabase-js";
 
 type UserRole = Database["public"]["Enums"]["user_role"];
 
@@ -44,8 +45,18 @@ const Auth = () => {
           handleRoleBasedRedirection(selectedRole, navigate);
         }
       } catch (error) {
-        console.error('Auth state change error:', error);
-        toast.error("Une erreur est survenue");
+        if (error instanceof AuthError) {
+          switch (error.message) {
+            case 'User already registered':
+              toast.error("Cette adresse email est déjà utilisée. Veuillez vous connecter.");
+              break;
+            default:
+              toast.error("Une erreur est survenue lors de l'authentification");
+          }
+        } else {
+          console.error('Auth state change error:', error);
+          toast.error("Une erreur est survenue");
+        }
       }
     });
 
