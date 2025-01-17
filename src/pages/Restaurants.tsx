@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { motion } from "framer-motion";
@@ -7,6 +7,8 @@ import SearchFilters from "@/components/SearchFilters";
 import RestaurantFilters, { FilterOptions } from "@/components/RestaurantFilters";
 import RestaurantSort from "@/components/RestaurantSort";
 import RestaurantList from "@/components/RestaurantList";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface UserPreferences {
   cuisine: string;
@@ -21,6 +23,8 @@ const Restaurants = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCuisine, setSelectedCuisine] = useState("tout");
+  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [userPreferences, setUserPreferences] = useState<UserPreferences>({
     cuisine: "tout",
     maxDeliveryTime: 60,
@@ -38,55 +42,47 @@ const Restaurants = () => {
   });
   const [sortBy, setSortBy] = useState("rating");
 
-  // Exemple de données de restaurants (à remplacer par des données réelles de Supabase)
-  const restaurants = [
-    {
-      id: "1",
-      name: "Mami Wata",
-      description: "Les meilleurs plats traditionnels congolais en ville",
-      image: "https://images.unsplash.com/photo-1504893524553-b855bce32c67",
-      rating: 4.8,
-      deliveryTime: "25-35",
-      minOrder: "5000 FCFA",
-      cuisine: "Congolaise",
-      address: "Avenue de la Paix, Brazzaville",
-      features: ["Végétarien", "Sans Gluten", "Éco-responsable"],
-      popularDishes: ["Poulet Moambé", "Saka Saka"],
-      aiRecommended: true,
-      sustainablePractices: true,
-      virtualTour: true,
-      trending: true,
-      ecoScore: 95
-    },
-    {
-      id: "2",
-      name: "Le Massamba",
-      description: "Une expérience culinaire africaine authentique",
-      image: "https://images.unsplash.com/photo-1504893524553-b855bce32c67",
-      rating: 4.5,
-      deliveryTime: "30-45",
-      minOrder: "3000 FCFA",
-      cuisine: "Africaine",
-      address: "Rue de la Liberté, Brazzaville",
-      features: ["Halal", "Local"],
-      popularDishes: ["Thieb", "Alloco"],
-      aiRecommended: true
-    },
-    {
-      id: "3",
-      name: "Chez Tantine",
-      description: "Le goût de la cuisine maison congolaise",
-      image: "https://images.unsplash.com/photo-1504893524553-b855bce32c67",
-      rating: 4.7,
-      deliveryTime: "20-30",
-      minOrder: "4000 FCFA",
-      cuisine: "Congolaise traditionnelle",
-      address: "Boulevard Denis Sassou Nguesso, Brazzaville",
-      features: ["Bio", "Fait Maison"],
-      popularDishes: ["Ndolé", "Fumbwa"],
-      aiRecommended: false
+  useEffect(() => {
+    fetchRestaurants();
+  }, [searchTerm, selectedCuisine]);
+
+  const fetchRestaurants = async () => {
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('restaurants')
+        .select(`
+          *,
+          menu_items (
+            id,
+            name,
+            price,
+            description,
+            image_url,
+            available
+          )
+        `);
+
+      if (searchTerm) {
+        const { data: searchResults, error: searchError } = await supabase.rpc(
+          'search_restaurants',
+          { search_query: searchTerm }
+        );
+        
+        if (searchError) throw searchError;
+        setRestaurants(searchResults || []);
+      } else {
+        const { data, error } = await query;
+        if (error) throw error;
+        setRestaurants(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+      toast.error("Erreur lors de la récupération des restaurants");
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   return (
     <motion.div
@@ -126,11 +122,17 @@ const Restaurants = () => {
             <RestaurantSort onSortChange={setSortBy} />
           </div>
 
-          <RestaurantList
-            restaurants={restaurants}
-            filters={filters}
-            sortBy={sortBy}
-          />
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-buntu-primary"></div>
+            </div>
+          ) : (
+            <RestaurantList
+              restaurants={restaurants}
+              filters={filters}
+              sortBy={sortBy}
+            />
+          )}
         </div>
       </div>
     </motion.div>
