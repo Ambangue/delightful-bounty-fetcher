@@ -8,10 +8,27 @@ import RestaurantFilters, { FilterOptions } from "@/components/RestaurantFilters
 import RestaurantSort from "@/components/RestaurantSort";
 import RestaurantList from "@/components/RestaurantList";
 
+interface UserPreferences {
+  cuisine: string;
+  maxDeliveryTime: number;
+  minRating: number;
+  glutenFree: boolean;
+  vegetarian: boolean;
+  priceRange: string;
+}
+
 const Restaurants = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCuisine, setSelectedCuisine] = useState("all");
+  const [selectedCuisine, setSelectedCuisine] = useState("tout");
+  const [userPreferences, setUserPreferences] = useState<UserPreferences>({
+    cuisine: "tout",
+    maxDeliveryTime: 60,
+    minRating: 0,
+    glutenFree: false,
+    vegetarian: false,
+    priceRange: "all"
+  });
   const [filters, setFilters] = useState<FilterOptions>({
     priceRange: [0, 50000],
     rating: 0,
@@ -100,6 +117,8 @@ const Restaurants = () => {
             setSearchTerm={setSearchTerm}
             selectedCuisine={selectedCuisine}
             setSelectedCuisine={setSelectedCuisine}
+            userPreferences={userPreferences}
+            setUserPreferences={setUserPreferences}
           />
 
           <div className="flex justify-between items-center">
