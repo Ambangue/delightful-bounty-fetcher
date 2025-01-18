@@ -21,9 +21,9 @@ const Cart = () => {
   const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleCheckout = async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      
+      // Vérifier l'authentification
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !user) {
@@ -32,8 +32,8 @@ const Cart = () => {
         return;
       }
 
-      // Create order in database
-      const { data: orderData, error: orderError } = await supabase
+      // Créer la commande
+      const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
@@ -44,44 +44,44 @@ const Cart = () => {
           payment_status: 'pending',
           payment_method: 'cash'
         })
-        .select()
+        .select('*')
         .single();
 
-      if (orderError || !orderData) {
-        throw new Error(orderError?.message || "Erreur lors de la création de la commande");
+      if (orderError || !order) {
+        throw new Error("Erreur lors de la création de la commande");
       }
 
-      // Create order items
-      const orderItems = state.items.map(item => ({
-        order_id: orderData.id,
-        item_name: item.name,
-        quantity: item.quantity,
-        price: item.price
-      }));
-
+      // Créer les articles de la commande
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(orderItems);
+        .insert(
+          state.items.map(item => ({
+            order_id: order.id,
+            item_name: item.name,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        );
 
       if (itemsError) {
-        throw new Error(itemsError.message);
+        // En cas d'erreur, supprimer la commande créée
+        await supabase.from('orders').delete().eq('id', order.id);
+        throw new Error("Erreur lors de l'ajout des articles");
       }
 
-      // Initialize delivery tracking
-      const { error: trackingError } = await supabase
+      // Créer le suivi de livraison
+      await supabase
         .from('delivery_tracking')
         .insert({
-          order_id: orderData.id,
+          order_id: order.id,
           status: 'preparing'
         });
 
-      if (trackingError) {
-        throw new Error(trackingError.message);
-      }
-
+      // Succès
       clearCart();
       toast.success("Commande créée avec succès!");
-      navigate(`/order/${orderData.id}`);
+      navigate(`/order/${order.id}`);
+
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error("Erreur lors de la création de la commande");
