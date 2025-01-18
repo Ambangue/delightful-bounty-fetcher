@@ -33,7 +33,7 @@ const Cart = () => {
       }
 
       // Create order in database
-      const { data: orders, error: orderError } = await supabase
+      const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert([{
           user_id: user.id,
@@ -44,13 +44,12 @@ const Cart = () => {
           payment_status: 'pending',
           payment_method: 'cash' // Default to cash payment
         }])
-        .select('*');
+        .select()
+        .single();
 
-      if (orderError || !orders || orders.length === 0) {
+      if (orderError || !order) {
         throw new Error(orderError?.message || "Erreur lors de la création de la commande");
       }
-
-      const order = orders[0];
 
       // Create order items
       const { error: itemsError } = await supabase
