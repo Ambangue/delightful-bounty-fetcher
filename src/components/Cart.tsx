@@ -44,8 +44,8 @@ const Cart = () => {
           payment_status: 'pending',
           payment_method: 'cash' // Default to cash payment
         })
-        .select('*')
-        .single();
+        .select()
+        .maybeSingle();
 
       if (orderError || !data) {
         throw new Error(orderError?.message || "Erreur lors de la création de la commande");
