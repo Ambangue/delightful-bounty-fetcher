@@ -44,20 +44,19 @@ const Cart = () => {
           payment_status: 'pending',
           payment_method: 'cash' // Default to cash payment
         })
-        .select('*');
+        .select('*')
+        .single();
 
-      if (orderError || !data || data.length === 0) {
+      if (orderError || !data) {
         throw new Error(orderError?.message || "Erreur lors de la création de la commande");
       }
-
-      const order = data[0];
 
       // Create order items
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(
           state.items.map(item => ({
-            order_id: order.id,
+            order_id: data.id,
             item_name: item.name,
             quantity: item.quantity,
             price: item.price
@@ -72,7 +71,7 @@ const Cart = () => {
       const { error: trackingError } = await supabase
         .from('delivery_tracking')
         .insert({
-          order_id: order.id,
+          order_id: data.id,
           status: 'preparing'
         });
 
@@ -82,7 +81,7 @@ const Cart = () => {
 
       clearCart();
       toast.success("Commande créée avec succès!");
-      navigate(`/order/${order.id}`);
+      navigate(`/order/${data.id}`);
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error("Erreur lors de la création de la commande");
