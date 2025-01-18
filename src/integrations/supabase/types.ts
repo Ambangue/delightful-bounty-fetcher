@@ -734,6 +734,7 @@ export type Database = {
           created_at: string
           delivery_address: string
           delivery_instructions: string | null
+          delivery_status: string | null
           delivery_time_preference: string | null
           estimated_delivery_time: string | null
           estimated_preparation_time: number | null
@@ -761,6 +762,7 @@ export type Database = {
           created_at?: string
           delivery_address: string
           delivery_instructions?: string | null
+          delivery_status?: string | null
           delivery_time_preference?: string | null
           estimated_delivery_time?: string | null
           estimated_preparation_time?: number | null
@@ -788,6 +790,7 @@ export type Database = {
           created_at?: string
           delivery_address?: string
           delivery_instructions?: string | null
+          delivery_status?: string | null
           delivery_time_preference?: string | null
           estimated_delivery_time?: string | null
           estimated_preparation_time?: number | null
