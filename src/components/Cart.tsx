@@ -41,8 +41,8 @@ const Cart = () => {
           total_amount: total,
           delivery_address: "À implémenter", // TODO: Add address input
           status: 'pending',
-          payment_method: 'cash', // Default to cash payment
-          delivery_status: 'pending'
+          payment_status: 'pending',
+          payment_method: 'cash' // Default to cash payment
         })
         .select()
         .single();
@@ -72,25 +72,11 @@ const Cart = () => {
         .from('delivery_tracking')
         .insert({
           order_id: order.id,
-          status: 'preparing',
+          status: 'preparing'
         });
 
       if (trackingError) {
         throw new Error(trackingError.message);
-      }
-
-      // Create payment record
-      const { error: paymentError } = await supabase
-        .from('payments')
-        .insert({
-          order_id: order.id,
-          amount: total,
-          payment_method: 'cash',
-          status: 'pending'
-        });
-
-      if (paymentError) {
-        throw new Error(paymentError.message);
       }
 
       clearCart();
