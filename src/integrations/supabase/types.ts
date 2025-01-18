@@ -754,7 +754,7 @@ export type Database = {
           tip_amount: number | null
           total_amount: number
           updated_at: string
-          user_id: string | null
+          user_id: string
         }
         Insert: {
           accepted_at?: string | null
@@ -782,7 +782,7 @@ export type Database = {
           tip_amount?: number | null
           total_amount: number
           updated_at?: string
-          user_id?: string | null
+          user_id: string
         }
         Update: {
           accepted_at?: string | null
@@ -810,7 +810,7 @@ export type Database = {
           tip_amount?: number | null
           total_amount?: number
           updated_at?: string
-          user_id?: string | null
+          user_id?: string
         }
         Relationships: []
       }
