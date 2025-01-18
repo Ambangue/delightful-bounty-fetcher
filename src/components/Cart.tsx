@@ -28,6 +28,7 @@ const Cart = () => {
       
       if (authError || !user) {
         toast.error("Veuillez vous connecter pour commander");
+        navigate("/auth");
         return;
       }
 
@@ -39,7 +40,9 @@ const Cart = () => {
           restaurant_id: state.restaurantId,
           total_amount: total,
           delivery_address: "À implémenter", // TODO: Add address input
-          status: 'pending'
+          status: 'pending',
+          payment_method: 'cash', // Default to cash payment
+          delivery_status: 'pending'
         })
         .select()
         .single();
@@ -76,12 +79,26 @@ const Cart = () => {
         throw new Error(trackingError.message);
       }
 
+      // Create payment record
+      const { error: paymentError } = await supabase
+        .from('payments')
+        .insert({
+          order_id: order.id,
+          amount: total,
+          payment_method: 'cash',
+          status: 'pending'
+        });
+
+      if (paymentError) {
+        throw new Error(paymentError.message);
+      }
+
       clearCart();
       toast.success("Commande créée avec succès!");
       navigate(`/order/${order.id}`);
     } catch (error) {
+      console.error('Error during checkout:', error);
       toast.error("Erreur lors de la création de la commande");
-      console.error(error);
     } finally {
       setIsLoading(false);
     }
