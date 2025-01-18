@@ -33,7 +33,7 @@ const Cart = () => {
       }
 
       // Create order in database
-      const { data, error: orderError } = await supabase
+      const { data: orderData, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
@@ -42,26 +42,26 @@ const Cart = () => {
           delivery_address: "À implémenter", // TODO: Add address input
           status: 'pending',
           payment_status: 'pending',
-          payment_method: 'cash' // Default to cash payment
+          payment_method: 'cash'
         })
         .select()
-        .maybeSingle();
+        .single();
 
-      if (orderError || !data) {
+      if (orderError || !orderData) {
         throw new Error(orderError?.message || "Erreur lors de la création de la commande");
       }
 
       // Create order items
+      const orderItems = state.items.map(item => ({
+        order_id: orderData.id,
+        item_name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      }));
+
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(
-          state.items.map(item => ({
-            order_id: data.id,
-            item_name: item.name,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        );
+        .insert(orderItems);
 
       if (itemsError) {
         throw new Error(itemsError.message);
@@ -71,7 +71,7 @@ const Cart = () => {
       const { error: trackingError } = await supabase
         .from('delivery_tracking')
         .insert({
-          order_id: data.id,
+          order_id: orderData.id,
           status: 'preparing'
         });
 
@@ -81,7 +81,7 @@ const Cart = () => {
 
       clearCart();
       toast.success("Commande créée avec succès!");
-      navigate(`/order/${data.id}`);
+      navigate(`/order/${orderData.id}`);
     } catch (error) {
       console.error('Error during checkout:', error);
       toast.error("Erreur lors de la création de la commande");
