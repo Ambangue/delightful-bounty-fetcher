@@ -21,9 +21,14 @@ const Cart = () => {
   const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const handleCheckout = async () => {
+    if (state.items.length === 0) {
+      toast.error("Votre panier est vide");
+      return;
+    }
+
     setIsLoading(true);
+
     try {
-      // Vérifier l'authentification
       const { data: { user }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !user) {
@@ -32,59 +37,52 @@ const Cart = () => {
         return;
       }
 
-      // Créer la commande
+      // Création de la commande en une seule transaction
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
           restaurant_id: state.restaurantId,
           total_amount: total,
-          delivery_address: "À implémenter", // TODO: Add address input
+          delivery_address: "À définir", 
           status: 'pending',
           payment_status: 'pending',
-          payment_method: 'cash'
+          payment_method: 'cash',
+          delivery_instructions: '',
+          special_requests: {},
+          estimated_preparation_time: 30
         })
-        .select('*')
+        .select()
         .single();
 
-      if (orderError || !order) {
-        throw new Error("Erreur lors de la création de la commande");
+      if (orderError) {
+        throw new Error("Impossible de créer la commande");
       }
 
-      // Créer les articles de la commande
+      // Création des articles de la commande
+      const orderItems = state.items.map(item => ({
+        order_id: order.id,
+        item_name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      }));
+
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(
-          state.items.map(item => ({
-            order_id: order.id,
-            item_name: item.name,
-            quantity: item.quantity,
-            price: item.price
-          }))
-        );
+        .insert(orderItems);
 
       if (itemsError) {
-        // En cas d'erreur, supprimer la commande créée
         await supabase.from('orders').delete().eq('id', order.id);
         throw new Error("Erreur lors de l'ajout des articles");
       }
 
-      // Créer le suivi de livraison
-      await supabase
-        .from('delivery_tracking')
-        .insert({
-          order_id: order.id,
-          status: 'preparing'
-        });
-
-      // Succès
       clearCart();
       toast.success("Commande créée avec succès!");
-      navigate(`/order/${order.id}`);
+      navigate(`/checkout/${order.id}`);
 
     } catch (error) {
-      console.error('Error during checkout:', error);
-      toast.error("Erreur lors de la création de la commande");
+      console.error('Erreur:', error);
+      toast.error("Une erreur est survenue lors de la création de la commande");
     } finally {
       setIsLoading(false);
     }
@@ -156,7 +154,7 @@ const Cart = () => {
                 <Button 
                   className="w-full mt-4 bg-buntu-primary hover:bg-buntu-secondary"
                   onClick={handleCheckout}
-                  disabled={isLoading}
+                  disabled={isLoading || state.items.length === 0}
                 >
                   {isLoading ? "Traitement..." : "Commander"}
                 </Button>
