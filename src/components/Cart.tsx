@@ -33,7 +33,7 @@ const Cart = () => {
       }
 
       // Create order in database
-      const { data: order, error: orderError } = await supabase
+      const { error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
@@ -43,12 +43,23 @@ const Cart = () => {
           status: 'pending',
           payment_status: 'pending',
           payment_method: 'cash' // Default to cash payment
-        })
+        });
+
+      if (orderError) {
+        throw new Error(orderError.message);
+      }
+
+      // Get the created order
+      const { data: order, error: fetchError } = await supabase
+        .from('orders')
         .select()
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
         .single();
 
-      if (orderError || !order) {
-        throw new Error(orderError?.message || "Erreur lors de la création de la commande");
+      if (fetchError || !order) {
+        throw new Error(fetchError?.message || "Erreur lors de la récupération de la commande");
       }
 
       // Create order items
