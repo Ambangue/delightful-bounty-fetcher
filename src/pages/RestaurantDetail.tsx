@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { useCart } from "@/contexts/CartContext";
 import Navbar from "@/components/Navbar";
+import { ReservationForm } from "@/components/ReservationForm";
 
 interface MenuItem {
   id: string;
@@ -118,7 +119,7 @@ const RestaurantDetail = () => {
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <div className="container mx-auto px-4 pt-20">
-        {/* En-tête du restaurant */}
+        {/* Restaurant Header */}
         <div className="relative h-64 rounded-lg overflow-hidden mb-6">
           <img
             src={restaurant.image}
@@ -147,64 +148,72 @@ const RestaurantDetail = () => {
           </div>
         </div>
 
-        {/* Menu */}
-        <div className="grid md:grid-cols-[240px,1fr] gap-6">
-          {/* Catégories */}
-          <div className="space-y-2">
-            {restaurant.categories.map((category) => (
-              <Button
-                key={category}
-                variant="ghost"
-                className="w-full justify-start"
-              >
-                {category}
-              </Button>
-            ))}
+        {/* Main Content Grid */}
+        <div className="grid md:grid-cols-[1fr,300px] gap-6">
+          {/* Menu Section */}
+          <div>
+            {/* Categories Navigation */}
+            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+              {restaurant.categories.map((category) => (
+                <Button
+                  key={category}
+                  variant="outline"
+                  className="whitespace-nowrap"
+                >
+                  {category}
+                </Button>
+              ))}
+            </div>
+
+            {/* Menu Items */}
+            <div className="space-y-6">
+              {restaurant.categories.map((category) => (
+                <div key={category}>
+                  <h2 className="text-2xl font-bold mb-4">{category}</h2>
+                  <div className="grid gap-4">
+                    {restaurant.menu
+                      .filter((item) => item.category === category)
+                      .map((item) => (
+                        <Card key={item.id}>
+                          <div className="flex">
+                            <CardContent className="flex-1 p-6">
+                              <CardTitle>{item.name}</CardTitle>
+                              <CardDescription className="mt-2">
+                                {item.description}
+                              </CardDescription>
+                              <div className="mt-4 flex items-center justify-between">
+                                <span className="font-bold">
+                                  {item.price} FCFA
+                                </span>
+                                <Button 
+                                  className="bg-buntu-primary hover:bg-buntu-secondary"
+                                  onClick={() => handleAddToCart(item)}
+                                >
+                                  Ajouter au panier
+                                </Button>
+                              </div>
+                            </CardContent>
+                            {item.image && (
+                              <div className="w-40 h-40">
+                                <img
+                                  src={item.image}
+                                  alt={item.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Liste des plats */}
-          <div className="space-y-6">
-            {restaurant.categories.map((category) => (
-              <div key={category}>
-                <h2 className="text-2xl font-bold mb-4">{category}</h2>
-                <div className="grid gap-4">
-                  {restaurant.menu
-                    .filter((item) => item.category === category)
-                    .map((item) => (
-                      <Card key={item.id}>
-                        <div className="flex">
-                          <CardContent className="flex-1 p-6">
-                            <CardTitle>{item.name}</CardTitle>
-                            <CardDescription className="mt-2">
-                              {item.description}
-                            </CardDescription>
-                            <div className="mt-4 flex items-center justify-between">
-                              <span className="font-bold">
-                                {item.price} FCFA
-                              </span>
-                              <Button 
-                                className="bg-buntu-primary hover:bg-buntu-secondary"
-                                onClick={() => handleAddToCart(item)}
-                              >
-                                Ajouter au panier
-                              </Button>
-                            </div>
-                          </CardContent>
-                          {item.image && (
-                            <div className="w-40 h-40">
-                              <img
-                                src={item.image}
-                                alt={item.name}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                        </div>
-                      </Card>
-                    ))}
-                </div>
-              </div>
-            ))}
+          {/* Reservation Form */}
+          <div className="md:sticky md:top-24 h-fit">
+            <ReservationForm restaurantId={restaurant.id!} />
           </div>
         </div>
       </div>
