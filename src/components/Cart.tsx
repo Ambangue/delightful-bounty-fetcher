@@ -35,7 +35,7 @@ const Cart = () => {
       // Create order in database
       const { data: orders, error: orderError } = await supabase
         .from('orders')
-        .insert({
+        .insert([{
           user_id: user.id,
           restaurant_id: state.restaurantId,
           total_amount: total,
@@ -43,8 +43,8 @@ const Cart = () => {
           status: 'pending',
           payment_status: 'pending',
           payment_method: 'cash' // Default to cash payment
-        })
-        .select();
+        }])
+        .select('*');
 
       if (orderError || !orders || orders.length === 0) {
         throw new Error(orderError?.message || "Erreur lors de la création de la commande");
