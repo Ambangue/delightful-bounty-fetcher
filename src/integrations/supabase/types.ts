@@ -1011,6 +1011,7 @@ export type Database = {
         Row: {
           address: string
           created_at: string
+          cuisine_type: string | null
           estimated_preparation_time: number | null
           id: string
           latitude: number | null
@@ -1022,6 +1023,7 @@ export type Database = {
         Insert: {
           address: string
           created_at?: string
+          cuisine_type?: string | null
           estimated_preparation_time?: number | null
           id?: string
           latitude?: number | null
@@ -1033,6 +1035,7 @@ export type Database = {
         Update: {
           address?: string
           created_at?: string
+          cuisine_type?: string | null
           estimated_preparation_time?: number | null
           id?: string
           latitude?: number | null
@@ -2437,6 +2440,7 @@ export type Database = {
         Returns: {
           address: string
           created_at: string
+          cuisine_type: string | null
           estimated_preparation_time: number | null
           id: string
           latitude: number | null

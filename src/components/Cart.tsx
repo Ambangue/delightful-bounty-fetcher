@@ -1,4 +1,4 @@
-import { ShoppingCart, X } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { Button } from "./ui/button";
 import {
   Sheet,
@@ -37,17 +37,17 @@ const Cart = () => {
         return;
       }
 
-      // Création de la commande en une seule transaction
+      // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user.id,
           restaurant_id: state.restaurantId,
           total_amount: total,
-          delivery_address: "À définir", 
           status: 'pending',
           payment_status: 'pending',
           payment_method: 'cash',
+          delivery_address: '',
           delivery_instructions: '',
           special_requests: {},
           estimated_preparation_time: 30
@@ -56,29 +56,30 @@ const Cart = () => {
         .single();
 
       if (orderError) {
-        throw new Error("Impossible de créer la commande");
+        throw orderError;
       }
 
-      // Création des articles de la commande
-      const orderItems = state.items.map(item => ({
-        order_id: order.id,
-        item_name: item.name,
-        quantity: item.quantity,
-        price: item.price
-      }));
-
+      // Create order items
       const { error: itemsError } = await supabase
         .from('order_items')
-        .insert(orderItems);
+        .insert(
+          state.items.map(item => ({
+            order_id: order.id,
+            item_name: item.name,
+            quantity: item.quantity,
+            price: item.price
+          }))
+        );
 
       if (itemsError) {
+        // Rollback order if items creation fails
         await supabase.from('orders').delete().eq('id', order.id);
-        throw new Error("Erreur lors de l'ajout des articles");
+        throw itemsError;
       }
 
       clearCart();
       toast.success("Commande créée avec succès!");
-      navigate(`/checkout/${order.id}`);
+      navigate(`/order/${order.id}`);
 
     } catch (error) {
       console.error('Erreur:', error);
@@ -141,7 +142,7 @@ const Cart = () => {
                       size="icon"
                       onClick={() => removeFromCart(item.id)}
                     >
-                      <X className="h-4 w-4" />
+                      ×
                     </Button>
                   </div>
                 </div>
